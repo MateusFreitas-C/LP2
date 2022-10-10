@@ -1,0 +1,34 @@
+Primeira Prova – Linguagem de Programação II – UFPB – 2022.1
+Professor: Carlos Eduardo Batista
+
+ 
+(Questão 1 - 7 pontos)
+Faça dois programas em C/C++ que sirvam para que você compare o tempo de 
+criação de 50 threads e 50 processos, onde as threads e processos criadas
+apenas executem uma função que exiba uma mensagem ("Nova thread - N" ou
+"Novo processo - N", onde N é o indice da thread/processo). Use alguma 
+função de medição de tempo* para tal e escreva suas impressões sobre o 
+resultado, justificando qual das opções demandou menos tempo de execução 
+para ser realizada e fazendo a relação disso com consumo de processamento e 
+memória. Inclua junto aos códigos prints das execuções dos programas. Para 
+finalizar, faça uma clara distinção (em comentários nos códigos) das diferenças
+principais entre threads e processos. Ao término do programa, nenhum processo
+deverá permanecer em execução. 
+ 
+* Funções sugeridas para uso no processo de medição de tempo de execução em
+C/C++: time(),  clock(), clock_gettime() (biblioteca time.h), gettimeofday()
+(da biblioteca sys/time.h); Em C++: método chrono::high_resolution_clock 
+(biblioteca chrono)
+
+
+No  programa de criação dos processos obtive a seguinte saída:
+
+"O tempo gasto na criação dos processos foi de 0.003721 segundos."
+
+No programa da criação de threads obtive a seguinte saída:
+
+"O tempo gasto na criação das Threads foi de 0.004475 segundos."
+
+Threads normalmente sao criadas e destruídas mais rapidamente que os 
+processos pois não possuem recursos associados, possui um desempenho
+melhor que os processos. Elas são chamadas de processos leves.
