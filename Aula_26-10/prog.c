@@ -9,12 +9,14 @@
 int global = 0;
 int lock = 0;
 
+/*
 int test_and_set(int* var){
     int aux = *var;
     *var = 1;
 
     return aux;
 }
+*/
 
 void* funcao_thread(void* p) {
 	int i = 0;
