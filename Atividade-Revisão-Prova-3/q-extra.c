@@ -46,18 +46,17 @@ int main(){
 
     while (strcmp(client_msg, "EXIT") !=0){
 
+        bzero(recv_buffer, 1024);
+
         int r_ret = recv(client_sock, recv_buffer, sizeof(recv_buffer), 0);
 
         printf("Recebi do Servidor: %s", recv_buffer);
 
-        fgets(&client_msg, 32, stdin);
+        fgets(client_msg, 32, stdin);
 
         int s_ret = send(client_sock, client_msg, strlen(client_msg),0);
     }
     
-
-    
-
     close(client_sock);
 
     return 0;

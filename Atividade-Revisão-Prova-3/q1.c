@@ -41,33 +41,51 @@ o lado do cliente.
 
 #define MY_PORT 9000
 #define QTD_CLIENTS 10
+#define QTD_CLIENTS_SHUT 5
 
-char final_buffer[1032] = "";
+char final_buffer[1024] = "";
+
+pthread_mutex_t buf_mutex;
 pthread_barrier_t barreira;
-int counter = 0;
+
+int client_sock[QTD_CLIENTS];
+
+void shutdown_handler(void* p){
+    pthread_barrier_wait(&barreira);
+    printf("Shutdown recebida\n");
+    exit(0);
+}
 
 void* client_handler(void* p){
-    int client_sock = (int)p;
-    char recv_buffer[32];
+    int _client_sock = (int)p;
+    char recv_buffer[64];
     char init_buf[10] = "\nSTART\n";
-    
-    bzero(recv_buffer, 32);
 
-    int s_ret = send(client_sock, init_buf, sizeof(init_buf), 0);
+    int s_ret = send(_client_sock, init_buf, sizeof(init_buf), 0);
 
-    while(counter < 4){
-        int r_ret = recv(client_sock, recv_buffer, sizeof(recv_buffer), 0);
+    while(1){
+        bzero(recv_buffer, 32);
+        int r_ret = recv(_client_sock, recv_buffer, sizeof(recv_buffer), 0);
 
-        printf("\nRecebi do cliente(%d): %s\n", client_sock, recv_buffer);
+        printf("\nRecebi do cliente(%d): %s\n", _client_sock, recv_buffer);
 
-        if(strncmp("SHUTDOWN\n", recv_buffer, sizeof(recv_buffer)) == 0){
-            counter++;
-            printf("Contador = %d\n", counter);
+        if(strncmp(recv_buffer, "SHUTDOWN\n",8) == 0){
+            close(_client_sock);
+            pthread_barrier_wait(&barreira);
+            pthread_exit(0);
         }
 
-        strcat(final_buffer, recv_buffer);
+        pthread_mutex_lock(&buf_mutex);
 
-        int s_ret = send(client_sock, final_buffer, sizeof(final_buffer), 0);  
+        strcat(final_buffer, recv_buffer);
+        strcat(final_buffer, "\n");
+
+        pthread_mutex_unlock(&buf_mutex);
+
+        for (int i = 0; i < QTD_CLIENTS; i++){
+
+            int s_ret = send(client_sock[i], final_buffer, sizeof(final_buffer), 0);
+        }        
     }
 }
 
@@ -78,10 +96,9 @@ int main(){
     struct sockaddr_in client[QTD_CLIENTS];
 
     int server_sock;
-    int client_sock[QTD_CLIENTS];
     int client_counter = 0;
 
-    int init_ret = pthread_barrier_init(&barreira, NULL, QTD_CLIENTS);
+    int init_ret = pthread_barrier_init(&barreira, NULL, QTD_CLIENTS_SHUT);
 
     if(init_ret != 0){
         printf("[main] Erro ao iniciar barreira (%d)\n", init_ret);
@@ -89,8 +106,13 @@ int main(){
     }
 
     pthread_t client_threads[QTD_CLIENTS];
+    pthread_t shut_thread;
 
     printf("Servidor aguardando na porta %d\n", MY_PORT);
+
+    pthread_mutex_init(&buf_mutex, 0);
+
+    pthread_create(&shut_thread, 0, shutdown_handler, 0);
 
     server_sock = socket(AF_INET, SOCK_STREAM, 0);
 
